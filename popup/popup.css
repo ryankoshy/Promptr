@@ -1,0 +1,290 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    width: 400px;
+    background-color: #ffffff;
+    color: #212121; /* Near black for softer text */
+    padding: 16px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+h1 {
+    font-family: 'Space Grotesk', sans-serif; /* Use Space Grotesk for heading */
+    font-size: 20px; /* Slightly larger for the new font */
+    font-weight: 700; /* Bold */
+    color: #000000;
+    margin-bottom: 4px;
+}
+
+.description {
+    font-size: 13px;
+    color: #616161; /* Grey text */
+    margin-bottom: 16px; /* Space below description */
+    line-height: 1.5;
+}
+
+.tabs {
+    display: flex;
+    background-color: #eeeeee; /* Light grey track background */
+    border-radius: 8px;       /* Rounded corners for the container */
+    padding: 4px;
+    margin-bottom: 16px;      /* Padding inside the track */
+}
+
+.tab-button {
+    padding: 8px 16px; /* Adjusted padding for inside the button */
+    background: none; /* Inactive tabs have no background */
+    border: none;
+    border-radius: 6px; /* Slightly rounded corners for the button itself */
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #212121; /* Black text for inactive tabs */
+    flex-grow: 1;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+    position: relative; /* Needed for potential future pseudo-elements if slider effect is desired */
+}
+
+.tab-button:hover:not(.active) { /* Hover only on inactive tabs */
+    background-color: #e0e0e0; /* Slightly darker grey on hover */
+    color: #000000;
+}
+
+.tab-button.active {
+    background-color: #ffffff; /* White background for active tab */
+    color: #000000;           /* Black text for active tab */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 16px; /* Consistent gap */
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+textarea#base-prompt { /* More specific selector */
+    width: 100%;
+    min-height: 100px; /* Use min-height */
+    padding: 12px;
+    border: 1px solid #e0e0e0; /* Lighter border */
+    border-radius: 6px; /* Slightly more rounded */
+    resize: vertical; /* Allow vertical resize only */
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: #fafafa; /* Very subtle background */
+}
+
+textarea#base-prompt:focus {
+    outline: none;
+    border-color: #bdbdbd; /* Darker border on focus */
+    background-color: #ffffff;
+}
+
+button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+button:hover {
+    background-color: #333333; /* Dark grey hover */
+}
+
+/* Style specific buttons if needed, otherwise base style applies */
+#enhance-button {
+    align-self: flex-start; /* Align left under textarea */
+    /* Remove specific styles if base is sufficient */
+}
+
+.hidden {
+    display: none;
+}
+
+#loading {
+    text-align: center;
+    font-style: normal; /* Remove italic */
+    color: #616161;
+    padding: 20px 0;
+}
+
+h3 { /* Style for result heading */
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+#enhanced-prompt {
+    padding: 12px;
+    background-color: #fafafa; /* Subtle background */
+    border: 1px solid #eeeeee; /* Subtle border */
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word; /* Ensure long words wrap */
+    max-height: 180px;
+    overflow-y: auto;
+    color: #212121;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-start; /* Align action buttons left */
+    gap: 10px; /* Space between action buttons */
+    margin-top: 8px;
+}
+
+/* Keep copy/save buttons standard for now */
+/* #copy-button, #save-button {} */
+
+/* Saved Prompts Styling */
+#saved-prompts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.prompt-item {
+    padding: 12px;
+    border: 1px solid #eeeeee;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.prompt-item:hover {
+    background-color: #f5f5f5; /* Slightly darker hover */
+}
+
+.prompt-title {
+    font-weight: 600; /* Bolder title */
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #000000;
+}
+
+.prompt-content {
+    font-size: 13px;
+    color: #424242; /* Slightly lighter content text */
+    white-space: pre-wrap; /* Allow content to wrap */
+    word-wrap: break-word;
+    line-height: 1.4;
+    margin-top: 4px;
+    /* Limit to 3 lines with ellipsis */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3; /* Standard property */
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+}
+
+.prompt-content.expanded {
+    -webkit-line-clamp: unset; /* Remove line limit */
+    line-clamp: unset; /* Standard property */
+    max-height: none; /* Allow full height */
+}
+
+.prompt-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+}
+
+.expand-button,
+.copy-prompt-button {
+    /* Override some base button styles for smaller look */
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: #f0f0f0; /* Lighter background */
+    color: #333333;         /* Darker text */
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-family: 'Space Grotesk', sans-serif; /* Keep font */
+}
+
+.expand-button:hover,
+.copy-prompt-button:hover {
+    background-color: #e0e0e0; /* Darken on hover */
+}
+
+#no-saved-prompts {
+    text-align: center;
+    color: #757575;
+    padding: 20px 0;
+    font-size: 14px;
+}
+
+/* Headings within the saved tab */
+#saved-tab h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #000000;
+}
+
+/* Textarea styles for bookmark tab */
+textarea#shortcut-prompt,
+textarea#detailed-prompt {
+    width: 100%;
+    min-height: 60px; /* Smaller height for these */
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: #fafafa;
+    margin-bottom: 10px; /* Space between textareas and button */
+}
+
+textarea#shortcut-prompt:focus,
+textarea#detailed-prompt:focus {
+    outline: none;
+    border-color: #bdbdbd;
+    background-color: #ffffff;
+}
+
+/* Bookmark save button */
+#save-bookmark-button {
+    /* Inherits base button styles */
+    align-self: flex-start; /* Align button left */
+    margin-bottom: 20px; /* Space below button before divider */
+}
+
+/* Divider style */
+hr.divider {
+    border: none;
+    border-top: 1px solid #eeeeee;
+    margin: 20px 0; /* Space around the divider */
+}

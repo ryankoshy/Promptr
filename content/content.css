@@ -1,0 +1,78 @@
+.promptr-suggestion-popup {
+  position: absolute;
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: sans-serif;
+  z-index: 9999; /* Ensure it appears above most page elements */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.promptr-suggestion-popup strong {
+  font-weight: bold;
+  color: #a0a0ff;
+}
+
+/* Promptr - content.css - Manual Icon Styles */
+
+#promptr-floating-icon {
+  position: absolute; /* Positioned relative to the document */
+  background-color: #000000; /* Black background */
+  color: #ffffff; /* White text/icon */
+  border: 1px solid #555; /* Subtle border */
+  border-radius: 50%; /* Circular */
+  width: 28px; /* Slightly larger */
+  height: 28px;
+  cursor: pointer;
+  z-index: 9998; /* Below menu, but above most content */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  font-size: 16px; /* Adjust icon size */
+  user-select: none; /* Prevent selecting the icon text */
+  transition: transform 0.1s ease-out;
+}
+
+#promptr-floating-icon:hover {
+  transform: scale(1.1);
+  background-color: #333; /* Darker grey on hover */
+}
+
+#promptr-action-menu {
+  position: absolute; /* Positioned relative to the document */
+  background-color: #000000; /* Black background */
+  color: #ffffff; /* White text */
+  border: 1px solid #555; /* Subtle border */
+  border-radius: 5px;
+  padding: 5px 0; /* Padding top/bottom */
+  font-size: 13px;
+  font-family: sans-serif;
+  z-index: 9999; /* Ensure it appears above most page elements */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  display: none; /* Hidden by default */
+}
+
+.promptr-action-menu-item {
+  padding: 10px 15px; /* More padding */
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.promptr-action-menu-item:hover {
+  background-color: #333; /* Darker grey on hover */
+}
+
+/* Optional: Remove or comment out old suggestion popup style if no longer needed
+.promptr-suggestion-popup { ... }
+*/

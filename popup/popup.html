@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Prompt Enhancer</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<div class="container">
+    <h1>Promptr</h1>
+    <p class="description">Enhance simple prompts and bookmark high frequency ones.</p>
+
+    <div class="tabs">
+        <button class="tab-button active" data-tab="enhance">Enhance</button>
+        <button class="tab-button" data-tab="saved">Bookmark</button>
+    </div>
+
+    <div class="tab-content active" id="enhance-tab">
+        <textarea id="base-prompt" placeholder="Enter your prompt here..."></textarea>
+        <button id="enhance-button">Enhance Prompt</button>
+        <div id="loading" class="hidden">Enhancing your prompt...</div>
+        <div id="result-container" class="hidden">
+            <h3>Enhanced Prompt:</h3>
+            <div id="enhanced-prompt"></div>
+            <div class="actions">
+                <button id="copy-button">Copy to Clipboard</button>
+                <button id="save-button">Save Prompt</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="saved-tab">
+        <h3>Add New Bookmark</h3>
+        <textarea id="shortcut-prompt" placeholder="Enter shortcut or base prompt..."></textarea>
+        <textarea id="detailed-prompt" placeholder="Enter the full detailed prompt..."></textarea>
+        <button id="save-bookmark-button">Save Bookmark</button>
+        
+        <hr class="divider"> 
+
+        <h3>Your Bookmarks</h3>
+        <div id="saved-prompts-list">
+            <!-- Saved prompts will be displayed here -->
+        </div>
+        <div id="no-saved-prompts">No saved prompts yet.</div>
+    </div>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>
