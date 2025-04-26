@@ -139,18 +139,25 @@ h3 { /* Style for result heading */
     margin-bottom: 8px;
 }
 
+/* Style for the enhanced prompt TEXTAREA */
 #enhanced-prompt {
+    width: 100%; /* Fill width */
+    min-height: 80px; /* Minimum height */
     padding: 12px;
     background-color: #fafafa; /* Subtle background */
-    border: 1px solid #eeeeee; /* Subtle border */
+    border: 1px solid #e0e0e0; /* Match base prompt border */
     border-radius: 6px;
     font-size: 14px;
     line-height: 1.5;
-    white-space: pre-wrap;
-    word-wrap: break-word; /* Ensure long words wrap */
-    max-height: 180px;
-    overflow-y: auto;
     color: #212121;
+    font-family: inherit; /* Use standard font */
+    resize: vertical; /* Allow vertical resize */
+}
+
+#enhanced-prompt:focus {
+    outline: none;
+    border-color: #bdbdbd; /* Darker border on focus */
+    background-color: #ffffff;
 }
 
 .actions {
@@ -212,13 +219,27 @@ h3 { /* Style for result heading */
 }
 
 .prompt-actions {
-    margin-top: 8px;
     display: flex;
-    gap: 8px;
+    justify-content: space-between; /* Pushes delete button to the right */
+    align-items: center;
+    margin-top: 5px; /* Add some space above buttons */
 }
 
-.expand-button,
-.copy-prompt-button {
+.left-actions {
+    display: flex;
+    gap: 5px; /* Space between expand and copy */
+}
+
+.expand-button, 
+.copy-button, 
+.delete-button {
+    padding: 3px 8px;
+    font-size: 0.9em;
+    background-color: #eee;
+}
+
+.expand-button, 
+.copy-button { 
     /* Override some base button styles for smaller look */
     padding: 4px 8px;
     font-size: 12px;
@@ -233,15 +254,78 @@ h3 { /* Style for result heading */
 }
 
 .expand-button:hover,
-.copy-prompt-button:hover {
+.copy-button:hover {
     background-color: #e0e0e0; /* Darken on hover */
 }
 
-#no-saved-prompts {
-    text-align: center;
-    color: #757575;
-    padding: 20px 0;
+/* Specific styles for the delete button */
+.delete-button {
+    background-color: #e74c3c; /* Red background */
+    color: white;
+    border-color: #c0392b;
+}
+
+.delete-button:hover {
+    background-color: #c0392b; /* Darker red on hover */
+    border-color: #a93226; /* Keep border consistent */
+}
+
+/* Styles for the delete button when in confirm state */
+.delete-button.confirm-delete {
+    background-color: white;
+    color: #e74c3c; /* Red text */
+    border: 1px solid #e74c3c; /* Red border */
+}
+
+.delete-button.confirm-delete:hover {
+    background-color: #fceded; /* Very light red background on hover */
+    color: #c0392b; /* Darker red text */
+    border-color: #c0392b; /* Darker red border */
+}
+
+/* Layout for the actions container */
+.prompt-actions {
+    display: flex;
+    justify-content: space-between; /* Pushes delete button to the right */
+    align-items: center;
+    margin-top: 5px; /* Add some space above buttons */
+}
+
+/* Textarea styles for bookmark tab */
+textarea#shortcut-prompt,
+textarea#detailed-prompt {
+    width: 100%;
+    min-height: 60px; /* Smaller height for these */
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    resize: vertical;
+    font-family: inherit;
     font-size: 14px;
+    line-height: 1.5;
+    background-color: #fafafa;
+    margin-bottom: 10px; /* Space between textareas and button */
+}
+
+textarea#shortcut-prompt:focus,
+textarea#detailed-prompt:focus {
+    outline: none;
+    border-color: #bdbdbd;
+    background-color: #ffffff;
+}
+
+/* Bookmark save button */
+#save-bookmark-button {
+    /* Inherits base button styles */
+    align-self: flex-start; /* Align button left */
+    margin-bottom: 20px; /* Space below button before divider */
+}
+
+/* Divider style */
+hr.divider {
+    border: none;
+    border-top: 1px solid #eeeeee;
+    margin: 20px 0; /* Space around the divider */
 }
 
 /* Headings within the saved tab */
@@ -287,4 +371,11 @@ hr.divider {
     border: none;
     border-top: 1px solid #eeeeee;
     margin: 20px 0; /* Space around the divider */
+}
+
+#no-saved-prompts {
+    text-align: center;
+    color: #757575;
+    padding: 20px 0;
+    font-size: 14px;
 }

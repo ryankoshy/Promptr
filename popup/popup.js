@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Display the enhanced prompt
-            enhancedPromptElement.textContent = enhancedPrompt;
+            enhancedPromptElement.value = enhancedPrompt; // Use .value for input elements
             resultContainer.classList.remove('hidden');
         } catch (error) {
             console.error('Error during enhancement:', error);
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Copy button click handler
     copyButton.addEventListener('click', () => {
-        navigator.clipboard.writeText(enhancedPromptElement.textContent)
+        navigator.clipboard.writeText(enhancedPromptElement.value) // Read .value
             .then(() => {
                 copyButton.textContent = 'Copied!';
                 setTimeout(() => {
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Save button click handler
     saveButton.addEventListener('click', () => {
         const basePrompt = basePromptInput.value.trim();
-        const enhancedPrompt = enhancedPromptElement.textContent;
+        const enhancedPrompt = enhancedPromptElement.value; // Read .value
 
         // Create prompt title (first 30 chars of base prompt)
         const title = basePrompt.length > 30
@@ -214,66 +214,105 @@ document.addEventListener('DOMContentLoaded', function() {
                 contentDiv.className = 'prompt-content';
                 contentDiv.textContent = fullPromptContent; // Start with full text, CSS handles truncation
 
-                // Create actions container
+                // Actions (expand, copy, delete)
                 const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'prompt-actions';
+                actionsDiv.classList.add('prompt-actions');
 
-                // Create Expand/Collapse button
+                // Group for left-aligned buttons
+                const leftActionsDiv = document.createElement('div');
+                leftActionsDiv.classList.add('left-actions');
+
+                // Expand/Collapse Button
                 const expandButton = document.createElement('button');
-                expandButton.className = 'expand-button';
                 expandButton.textContent = 'Expand';
+                expandButton.classList.add('expand-button'); // Use original class
+                expandButton.title = 'Expand/Collapse Prompt';
                 expandButton.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent prompt item click event
+                    e.stopPropagation(); // Prevent triggering the item click
+                    const contentDiv = promptElement.querySelector('.prompt-content');
+                    // Toggle the 'expanded' class on the content div
                     contentDiv.classList.toggle('expanded');
-                    expandButton.textContent = contentDiv.classList.contains('expanded') ? 'Collapse' : 'Expand';
+
+                    // Update button text based on the presence of the 'expanded' class
+                    if (contentDiv.classList.contains('expanded')) {
+                        expandButton.textContent = 'Collapse'; // Change text
+                    } else {
+                        expandButton.textContent = 'Expand'; // Change text back
+                    }
                 });
 
-                // Create Copy button
-                const copyPromptBtn = document.createElement('button');
-                copyPromptBtn.className = 'copy-prompt-button';
-                copyPromptBtn.textContent = 'Copy';
-                copyPromptBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent prompt item click event
-                    navigator.clipboard.writeText(fullPromptContent)
+                // Copy Button
+                const copyButton = document.createElement('button');
+                copyButton.textContent = 'Copy';
+                copyButton.classList.add('copy-button'); // Use a consistent class
+                copyButton.title = 'Copy Enhanced Prompt';
+                copyButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent triggering the item click
+                    navigator.clipboard.writeText(prompt.enhancedPrompt)
                         .then(() => {
-                            const originalText = copyPromptBtn.textContent;
-                            copyPromptBtn.textContent = 'Copied!';
-                            setTimeout(() => {
-                                copyPromptBtn.textContent = originalText;
-                            }, 1500);
+                            const originalText = copyButton.textContent;
+                            copyButton.textContent = 'Copied!';
+                            setTimeout(() => copyButton.textContent = originalText, 1500);
                         })
-                        .catch(err => {
-                            console.error('Failed to copy prompt:', err);
-                            alert('Failed to copy prompt.');
-                        });
+                        .catch(err => console.error('Failed to copy:', err));
                 });
 
-                // Assemble the prompt item
+                leftActionsDiv.appendChild(expandButton);
+                leftActionsDiv.appendChild(copyButton);
+
+                // --- Delete Button ---
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete'; // Text instead of icon
+                deleteButton.classList.add('delete-button'); // New class for styling
+                deleteButton.title = 'Delete Prompt';
+                deleteButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent triggering the item click
+
+                    // Check if button is already in confirm state
+                    if (deleteButton.classList.contains('confirm-delete')) {
+                        // If yes, perform the delete
+                        deletePrompt(prompt.id);
+                    } else {
+                        // If no, change to confirm state
+                        deleteButton.textContent = 'Confirm';
+                        deleteButton.classList.add('confirm-delete');
+
+                        // Optional: Revert back after a delay if not clicked
+                        // setTimeout(() => {
+                        //     if (deleteButton.classList.contains('confirm-delete')) {
+                        //         deleteButton.textContent = 'Delete';
+                        //         deleteButton.classList.remove('confirm-delete');
+                        //     }
+                        // }, 3000); // Revert after 3 seconds
+                    }
+                });
+                // --- End Delete Button ---
+
+                actionsDiv.appendChild(leftActionsDiv); // Add the group of left buttons
+                actionsDiv.appendChild(deleteButton); // Add the delete button
+
                 promptElement.innerHTML = `<div class="prompt-title">${prompt.title}</div>`; // Set title first
                 promptElement.appendChild(contentDiv); // Add content div
-                actionsDiv.appendChild(expandButton);
-                actionsDiv.appendChild(copyPromptBtn);
                 promptElement.appendChild(actionsDiv); // Add actions div
-
-                // Click on the main item still loads it into Enhance tab
-                promptElement.addEventListener('click', () => {
-                    // Only load base prompt if it exists (for enhanced prompts)
-                    basePromptInput.value = prompt.basePrompt || ''; 
-                    enhancedPromptElement.textContent = fullPromptContent;
-                    resultContainer.classList.remove('hidden');
-
-                    // Switch to enhance tab
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    document.querySelector('[data-tab="enhance"]').classList.add('active');
-                    document.getElementById('enhance-tab').classList.add('active');
-                    
-                    // Scroll enhance tab to top potentially
-                    document.getElementById('enhance-tab').scrollTop = 0;
-                });
 
                 savedPromptsList.appendChild(promptElement);
             });
         });
     }
+
+    // --- Add Delete Prompt Function ---
+    function deletePrompt(promptId) {
+        chrome.storage.sync.get(['savedPrompts'], function(result) {
+            let savedPrompts = result.savedPrompts || [];
+            // Filter out the prompt with the given ID
+            savedPrompts = savedPrompts.filter(prompt => prompt.id !== promptId);
+
+            // Save the updated array back to storage
+            chrome.storage.sync.set({ savedPrompts: savedPrompts }, function() {
+                console.log('Prompt deleted successfully');
+                loadSavedPrompts(); // Refresh the list
+            });
+        });
+    }
+    // --- End Add Delete Prompt Function ---
 });
