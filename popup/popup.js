@@ -291,7 +291,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 actionsDiv.appendChild(leftActionsDiv); // Add the group of left buttons
                 actionsDiv.appendChild(deleteButton); // Add the delete button
 
-                promptElement.innerHTML = `<div class="prompt-title">${prompt.title}</div>`; // Set title first
+                // XSS Fix: Create title element safely
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'prompt-title';
+                titleDiv.textContent = prompt.title; // Use textContent to prevent XSS
+                promptElement.appendChild(titleDiv); // Append the safe title
+
                 promptElement.appendChild(contentDiv); // Add content div
                 promptElement.appendChild(actionsDiv); // Add actions div
 

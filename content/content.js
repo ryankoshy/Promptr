@@ -443,12 +443,28 @@ function handleReplaceShortcutClick(event) {
     });
 }
 
+// --- Debounce Utility --- 
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 // --- Event Listeners Setup ---
 
+// Debounce the selection handler to improve performance
+const debouncedHandleTextSelection = debounce(handleTextSelection, 300); // 300ms delay
+
 // Listen for mouse release to check selection
-document.addEventListener('mouseup', handleTextSelection);
+document.addEventListener('mouseup', debouncedHandleTextSelection);
 // Also check on key release in case selection changes via keyboard
-document.addEventListener('keyup', handleTextSelection);
+document.addEventListener('keyup', debouncedHandleTextSelection);
 
 // Listen for clicks outside the menu/icon to hide them
 document.addEventListener('mousedown', (event) => {
