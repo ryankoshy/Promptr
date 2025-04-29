@@ -15,9 +15,156 @@ document.addEventListener('DOMContentLoaded', function() {
     const shortcutPromptInput = document.getElementById('shortcut-prompt');
     const detailedPromptInput = document.getElementById('detailed-prompt');
     const saveBookmarkButton = document.getElementById('save-bookmark-button');
+    // New container for parameters
+    const parameterContainer = document.getElementById('parameter-container');
 
-    // API endpoint - replace with your actual API Gateway URL
-    const API_ENDPOINT = 'https://g9xrbepf9b.execute-api.us-east-2.amazonaws.com/dev/enhance';
+    // API endpoint - This might become less relevant here, background.js handles calls
+    // const API_ENDPOINT = '...';
+
+    // --- State Management ---
+    let uiState = 'INITIAL'; // INITIAL, PENDING_PARAMS, PARAMS_RECEIVED, PENDING_GENERATION, GENERATION_COMPLETE
+    let storedBasePrompt = '';
+    let currentParameters = []; // To store parameter definitions received from backend
+
+    // --- Helper Functions ---
+    function setUIState(newState) {
+        uiState = newState;
+        console.log("UI State changed to:", uiState);
+
+        // Reset common elements
+        loadingElement.classList.add('hidden');
+        enhanceButton.disabled = false;
+
+        switch (uiState) {
+            case 'INITIAL':
+                parameterContainer.classList.add('hidden');
+                resultContainer.classList.add('hidden');
+                parameterContainer.innerHTML = ''; // Clear old parameters
+                enhanceButton.textContent = 'Enhance Prompt';
+                basePromptInput.disabled = false;
+                storedBasePrompt = '';
+                currentParameters = [];
+                break;
+            case 'PENDING_PARAMS':
+                loadingElement.textContent = 'Getting parameters...';
+                loadingElement.classList.remove('hidden');
+                enhanceButton.disabled = true;
+                enhanceButton.textContent = 'Loading...';
+                basePromptInput.disabled = true; // Disable input while loading
+                parameterContainer.classList.add('hidden');
+                resultContainer.classList.add('hidden');
+                break;
+            case 'PARAMS_RECEIVED':
+                parameterContainer.classList.remove('hidden'); // Show parameters
+                resultContainer.classList.add('hidden');
+                enhanceButton.textContent = 'Generate';
+                basePromptInput.disabled = true; // Keep disabled
+                break;
+            case 'PENDING_GENERATION':
+                loadingElement.textContent = 'Generating enhanced prompt...';
+                loadingElement.classList.remove('hidden');
+                enhanceButton.disabled = true;
+                enhanceButton.textContent = 'Generating...';
+                parameterContainer.classList.add('hidden'); // Hide params while generating
+                resultContainer.classList.add('hidden');
+                break;
+            case 'GENERATION_COMPLETE':
+                resultContainer.classList.remove('hidden'); // Show result
+                parameterContainer.classList.add('hidden');
+                enhanceButton.textContent = 'Start Over'; // Change button to allow reset
+                basePromptInput.disabled = false; // Re-enable for new prompt
+                break;
+            default:
+                console.error('Unknown UI State:', newState);
+                setUIState('INITIAL'); // Reset to known state
+        }
+    }
+
+    /**
+     * Creates and displays input fields for the given parameters.
+     * @param {Array<Object>} parameters - Array of parameter objects { name, label, type, placeholder, required }
+     */
+    function createParameterInputs(parameters) {
+        const container = document.getElementById('parameter-container');
+        container.innerHTML = ''; // Clear previous inputs
+        container.style.display = 'block'; // Make sure container is visible
+
+        // Optional: Add a heading for the parameters section
+        const heading = document.createElement('h3');
+        heading.textContent = 'Refine your Prompt:';
+        heading.style.marginTop = '15px'; // Add some space above
+        heading.style.marginBottom = '10px';
+        heading.style.fontSize = '1em'; // Adjust size if needed
+        container.appendChild(heading);
+
+        parameters.forEach(param => {
+            // Create the wrapping div matching the base prompt structure
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'input-group'; // Use the same class as the base prompt group
+            groupDiv.style.marginBottom = '12px'; // Add some space between parameter groups
+
+            const label = document.createElement('label');
+            // Basic styling for the label
+            label.style.display = 'block';
+            label.style.marginBottom = '4px';
+            label.style.fontWeight = 'normal'; // Adjust weight as needed
+            label.style.fontSize = '0.9em';
+            label.textContent = `${param.label}${param.required ? ' *' : ''}:`; // Added space before asterisk
+            label.htmlFor = `param-${param.name}`;
+
+            let input;
+            const inputBaseStyle = 'width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;'; // Common styles
+
+            if (param.type === 'textarea') {
+                input = document.createElement('textarea');
+                input.rows = 2; // Slightly smaller default size for params
+                input.style.cssText = inputBaseStyle + 'resize: vertical;'; // Allow vertical resize
+            } else { // Default to text input
+                input = document.createElement('input');
+                input.type = param.type || 'text';
+                input.style.cssText = inputBaseStyle;
+            }
+            // Add a class if you have specific CSS rules, e.g., 'form-control'
+            // input.className = 'form-control'; 
+            input.id = `param-${param.name}`;
+            input.name = param.name;
+            input.placeholder = param.placeholder || '';
+            if (param.required) {
+                input.required = true;
+                // Optional: Add visual cue beyond asterisk if needed
+                // label.style.fontWeight = 'bold'; 
+            }
+
+            // Append label and input to the group div
+            groupDiv.appendChild(label);
+            groupDiv.appendChild(input);
+
+            // Append the group div to the main container
+            container.appendChild(groupDiv);
+        });
+    }
+
+    function collectParameterValues() {
+        const collected = {};
+        let isValid = true; 
+        currentParameters.forEach(param => {
+            const inputElement = document.getElementById(`param-${param.name}`);
+            if (inputElement) {
+                const value = inputElement.value.trim();
+                if (param.required && !value) {
+                    alert(`Please fill in the '${param.label}' parameter.`);
+                    isValid = false;
+                }
+                collected[param.name] = value;
+            } else {
+                 console.warn(`Could not find input element for parameter: ${param.name}`);
+            }
+        });
+        return isValid ? collected : null;
+    }
+
+    // --- Initialization ---
+    setUIState('INITIAL'); // Set initial state on load
 
     // Tab switching
     tabButtons.forEach(button => {
@@ -37,68 +184,95 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhance button click handler
-    enhanceButton.addEventListener('click', async () => {
-        const basePrompt = basePromptInput.value.trim();
+    // Enhance/Generate button click handler (MODIFIED)
+    enhanceButton.addEventListener('click', () => {
+        if (uiState === 'INITIAL' || uiState === 'GENERATION_COMPLETE') {
+            // --- Start Enhancement Flow --- 
+            if (uiState === 'GENERATION_COMPLETE') {
+                 // Reset if starting over
+                 setUIState('INITIAL');
+                 basePromptInput.value = '';
+                 enhancedPromptElement.value = '';
+                 return; // Exit handler, user needs to input prompt now
+            }
 
-        if (!basePrompt) {
-            alert('Please enter a prompt to enhance.');
-            return;
-        }
+            const basePrompt = basePromptInput.value.trim();
+            if (!basePrompt) {
+                alert('Please enter a prompt to enhance.');
+                return;
+            }
+            storedBasePrompt = basePrompt; // Store for later use
+            setUIState('PENDING_PARAMS');
 
-        try {
-            // Show loading, hide results
-            loadingElement.classList.remove('hidden');
-            resultContainer.classList.add('hidden');
+            // Send message to background to get parameters
+            chrome.runtime.sendMessage({ action: 'getParameters', basePrompt: storedBasePrompt }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error('Error sending getParameters message:', chrome.runtime.lastError.message);
+                    alert(`Error communicating with background: ${chrome.runtime.lastError.message}`);
+                    setUIState('INITIAL');
+                    return;
+                }
+                console.log('Received getParameters response from background:', response);
 
-            console.log('Sending request to API with prompt:', basePrompt);
+                if (response.error) {
+                    alert(`Error getting parameters: ${response.error}`);
+                    setUIState('INITIAL');
+                    return;
+                }
 
-            // Modified request format - send a string with double escaped quotes
-            const response = await fetch(API_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    // Adjust the body format to match what Lambda expects
-                    body: JSON.stringify({ prompt: basePrompt })
-                })
+                if (response.parameters && response.parameters.length > 0) {
+                    createParameterInputs(response.parameters);
+                    setUIState('PARAMS_RECEIVED');
+                } else {
+                    // If no parameters are returned, maybe proceed directly to enhance?
+                    // Or show an error/message? For now, assume parameters are expected.
+                    console.warn('No parameters received from background. Resetting.');
+                    alert('Could not retrieve enhancement parameters.');
+                    setUIState('INITIAL');
+                }
             });
 
-            console.log('Response status:', response.status);
-            const rawData = await response.json();
-            console.log('Raw response data:', rawData);
+        } else if (uiState === 'PARAMS_RECEIVED') {
+            // --- Generate Final Prompt --- 
+            const collectedParameters = collectParameterValues();
+            if (!collectedParameters) {
+                 // collectParameterValues shows an alert if invalid
+                 return; 
+            }
 
-            // Handle nested response format
-            let data;
-            if (rawData.body && typeof rawData.body === 'string') {
-                try {
-                    data = JSON.parse(rawData.body);
-                } catch (e) {
-                    data = rawData;
+            setUIState('PENDING_GENERATION');
+
+            // Send message to background script to handle the final enhancement API call
+            chrome.runtime.sendMessage({ 
+                action: 'enhancePrompt', 
+                text: storedBasePrompt, 
+                parameters: collectedParameters // Send collected parameters
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error('Error sending enhancePrompt message:', chrome.runtime.lastError.message);
+                    alert(`Error communicating with background: ${chrome.runtime.lastError.message}`);
+                    setUIState('PARAMS_RECEIVED'); // Go back to parameter state for retry
+                    return;
                 }
-            } else {
-                data = rawData;
-            }
+                console.log('Received enhancePrompt response from background:', response);
 
-            if (data.error) {
-                throw new Error(data.error);
-            }
+                if (response.error) {
+                    alert(`Error enhancing prompt: ${response.error}`);
+                    setUIState('PARAMS_RECEIVED'); // Go back to parameter state for retry
+                    return;
+                }
 
-            const enhancedPrompt = data.enhancedPrompt;
+                const enhancedPrompt = response.enhancedPrompt;
+                if (!enhancedPrompt) {
+                     alert('Received empty enhanced prompt from background.');
+                     setUIState('PARAMS_RECEIVED'); // Go back to parameter state for retry
+                     return;
+                }
 
-            if (!enhancedPrompt) {
-                throw new Error('No enhanced prompt returned from API');
-            }
-
-            // Display the enhanced prompt
-            enhancedPromptElement.value = enhancedPrompt; // Use .value for input elements
-            resultContainer.classList.remove('hidden');
-        } catch (error) {
-            console.error('Error during enhancement:', error);
-            alert(`Error: ${error.message}`);
-        } finally {
-            loadingElement.classList.add('hidden');
+                // Display the enhanced prompt
+                enhancedPromptElement.value = enhancedPrompt;
+                setUIState('GENERATION_COMPLETE');
+            });
         }
     });
 
